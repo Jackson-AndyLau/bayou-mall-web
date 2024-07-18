@@ -9,8 +9,8 @@
 - 发布时，可动态配置CDN静态资源／切换新旧版本
 - 演示地址：[http://demo.open.bayou.io/bayou-fast](http://demo.open.bayou.io/bayou-fast) (账号密码：admin/admin)
 
-![输入图片说明](https://images.gitee.com/uploads/images/2019/0305/133529_ff15f192_63154.png "01.png")
-![输入图片说明](https://images.gitee.com/uploads/images/2019/0305/133537_7a1b2d85_63154.png "02.png")
+![输入图片说明](https://images.gitee.com/upload/images/2019/0305/133529_ff15f192_63154.png "01.png")
+![输入图片说明](https://images.gitee.com/upload/images/2019/0305/133537_7a1b2d85_63154.png "02.png")
 
 
 ## 说明文档
