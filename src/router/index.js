@@ -63,7 +63,7 @@ router.beforeEach((to, from, next) => {
     next()
   } else {
     http({
-      url: http.adornUrl('/sys/menu/nav'),
+      url: http.adornUrl('/admin/sys/menu/nav'),
       method: 'get',
       params: http.adornParams()
     }).then(({data}) => {

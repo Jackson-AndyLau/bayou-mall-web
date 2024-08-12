@@ -14,7 +14,7 @@ for (let i = 0; i < Math.floor(Math.random() * 10 + 1); i++) {
 export function list () {
   return {
     // isOpen: false,
-    url: '/sys/oss/list',
+    url: '/admin/sys/oss/list',
     type: 'get',
     data: {
       'msg': 'success',
@@ -34,7 +34,7 @@ export function list () {
 export function config () {
   return {
     // isOpen: false,
-    url: '/sys/oss/config',
+    url: '/admin/sys/oss/config',
     type: 'get',
     data: {
       'msg': 'success',
@@ -68,7 +68,7 @@ export function config () {
 export function addConfig () {
   return {
     // isOpen: false,
-    url: '/sys/oss/saveConfig',
+    url: '/admin/sys/oss/saveConfig',
     type: 'post',
     data: {
       'msg': 'success',
@@ -81,7 +81,7 @@ export function addConfig () {
 export function del () {
   return {
     // isOpen: false,
-    url: '/sys/oss/delete',
+    url: '/admin/sys/oss/delete',
     type: 'post',
     data: {
       'msg': 'success',
