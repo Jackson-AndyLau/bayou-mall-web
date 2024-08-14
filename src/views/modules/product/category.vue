@@ -42,14 +42,33 @@
 
     </el-tree>
     <el-dialog
-      title="提示"
+      v-bind:title="title"
       :visible.sync="dialogVisible"
       width="30%"
+      v-bind:close-on-click-modal="false"
     >
       <el-form :model="category">
         <el-form-item label="菜单名称">
           <el-input
             v-model="category.name"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="图标地址">
+          <el-input
+            v-model="category.icon"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="计量单位">
+          <el-input
+            v-model="category.productUnit"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="商品数量">
+          <el-input
+            v-model="category.productCount"
             autocomplete="off"
           ></el-input>
         </el-form-item>
@@ -80,8 +99,10 @@ export default {
   data () {
     // 这里存放数据
     return {
+      // 标题
+      title: '提示',
       data: [],
-      category: { catId: null, name: '', parentCid: 0, catLevel: 0, showStatus: 0, sort: 0 },
+      category: { catId: null, name: '', parentCid: 0, catLevel: 0, showStatus: 0, sort: 0, icon: '', productUnit: '', productCount: 0 },
       // update/add
       dialogType: '',
       // 是否显示弹窗
@@ -115,9 +136,18 @@ export default {
       console.log('append:', data)
       this.dialogType = 'add'
       this.dialogVisible = true
+      this.title = '新增菜单'
       // 对象赋值
       this.category.parentCid = data.catId
       this.category.catLevel = data.catLevel * 1 + 1
+      // 清空缓存
+      this.category.catId = ''
+      this.category.name = ''
+      this.category.icon = ''
+      this.category.productUnit = ''
+      this.category.productCount = ''
+      this.category.showStatus = 0
+      this.category.sort = 0
     },
 
     // 新增菜单
@@ -193,10 +223,49 @@ export default {
     update (data) {
       console.log('要修改的数据：', data)
       this.dialogType = 'update'
+      this.title = '修改菜单'
       // 显示弹窗
       this.dialogVisible = true
-      // 对象赋值（回显）
-      this.category.name = data.name
+      // 获取回显数据
+      this.$http({
+        url: this.$http.adornUrl(`/product/category/info/${data.catId}`),
+        method: 'get'
+      }).then(({ data }) => {
+        // 对象赋值（回显）
+        console.log('要回显的数据：', data)
+        this.category.catId = data.category.catId
+        this.category.name = data.category.name
+        this.category.icon = data.category.icon
+        this.category.productUnit = data.category.productUnit
+        this.category.productCount = data.category.productCount
+        this.category.parentCid = data.category.parentCid
+      })
+    },
+    updateCategory () {
+      console.log('正在更新的菜单数据：', this.category)
+      // 解构数据
+      var { catId, name, icon, productUnit, productCount } = this.category
+      this.$http({
+        url: this.$http.adornUrl('/product/category/update'),
+        method: 'post',
+        data: this.$http.adornData({ catId, name, icon, productUnit, productCount }, false)
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 1500
+          })
+          // 关闭对话框
+          this.dialogVisible = false
+          // 刷新菜单列表
+          this.getMenus()
+          // 设置默认展开的菜单
+          this.expandedKeys = [this.category.parentCid]
+        } else {
+          this.message.error(data.msg)
+        }
+      })
     }
   },
   // 生命周期 - 创建完成（可以访问当前 this 实例）
