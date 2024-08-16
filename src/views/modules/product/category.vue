@@ -1,91 +1,109 @@
 <template>
-  <div>
-    <el-tree
-      :data="data"
-      :props="defaultProps"
-      :expand-on-click-node="false"
-      show-checkbox
-      node-key="catId"
-      :default-expanded-keys="expandedKeys"
-    >
-      <span
-        class="custom-tree-node"
-        slot-scope="{ node, data }"
+  <div id="external">
+    <div id="top">
+      <el-switch
+        v-model="draggableValue"
+        active-text="开启拖拽"
+        inactive-text="关闭拖拽"
       >
-        <span>{{ node.label }}</span>
-        <span>
-          <el-button
-            type="text"
-            size="mini"
-            @click="() => append(data)"
-            v-if="node.level <= 2"
-          >
-            Append
-          </el-button>
-          <el-button
-            type="text"
-            size="mini"
-            @click="update(data)"
-          >
-            Update
-          </el-button>
-          <el-button
-            type="text"
-            size="mini"
-            @click="() => remove(node, data)"
-            v-if="node.childNodes.length == 0"
-          >
-            Delete
-          </el-button>
+      </el-switch>
+      <el-button
+        class="draggableButton"
+        type="primary"
+        plain
+        :disabled="draggableValue ? false : true"
+      >确认拖拽</el-button>
+    </div>
+    <div>
+      <el-tree
+        :data="data"
+        :props="defaultProps"
+        :expand-on-click-node="false"
+        show-checkbox
+        node-key="catId"
+        :default-expanded-keys="expandedKeys"
+        :draggable="draggableValue"
+        @node-drop="handleDrop"
+        :allow-drop="allowDrop"
+      >
+        <span
+          class="custom-tree-node"
+          slot-scope="{ node, data }"
+        >
+          <span>{{ node.label }}</span>
+          <span>
+            <el-button
+              type="text"
+              size="mini"
+              @click="() => append(data)"
+              v-if="node.level <= 2"
+            >
+              Append
+            </el-button>
+            <el-button
+              type="text"
+              size="mini"
+              @click="update(data)"
+            >
+              Update
+            </el-button>
+            <el-button
+              type="text"
+              size="mini"
+              @click="() => remove(node, data)"
+              v-if="node.childNodes.length == 0"
+            >
+              Delete
+            </el-button>
+          </span>
         </span>
-      </span>
 
-    </el-tree>
-    <el-dialog
-      v-bind:title="title"
-      :visible.sync="dialogVisible"
-      width="30%"
-      v-bind:close-on-click-modal="false"
-    >
-      <el-form :model="category">
-        <el-form-item label="菜单名称">
-          <el-input
-            v-model="category.name"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="图标地址">
-          <el-input
-            v-model="category.icon"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="计量单位">
-          <el-input
-            v-model="category.productUnit"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="商品数量">
-          <el-input
-            v-model="category.productCount"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <span
-        slot="footer"
-        class="dialog-footer"
+      </el-tree>
+      <el-dialog
+        v-bind:title="title"
+        :visible.sync="dialogVisible"
+        width="30%"
+        v-bind:close-on-click-modal="false"
       >
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="submitCategory"
-        >确 定</el-button>
-      </span>
-    </el-dialog>
+        <el-form :model="category">
+          <el-form-item label="菜单名称">
+            <el-input
+              v-model="category.name"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="图标地址">
+            <el-input
+              v-model="category.icon"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="计量单位">
+            <el-input
+              v-model="category.productUnit"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="商品数量">
+            <el-input
+              v-model="category.productCount"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+        </el-form>
+        <span
+          slot="footer"
+          class="dialog-footer"
+        >
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="submitCategory"
+          >确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
   </div>
-
 </template>
 
 <script>
@@ -99,6 +117,12 @@ export default {
   data () {
     // 这里存放数据
     return {
+      // 是否开启拖拽
+      draggableValue: false,
+      // 拖拽更新的节点
+      updateNodes: [],
+      // 最大层级
+      maxLevel: 0,
       // 标题
       title: '提示',
       data: [],
@@ -266,6 +290,113 @@ export default {
           this.message.error(data.msg)
         }
       })
+    },
+    // 移动事件，type 参数有三种情况：'prev'、'inner' 和 'next'，分别表示放置在目标节点前、插入至目标节点和放置在目标节点后
+    allowDrop (draggingNode, dropNode, type) {
+      console.log('移动事件参数：', draggingNode, dropNode, type)
+      // 获取当前拖动节点的最大层级
+      this.countNodeLevel(draggingNode.data)
+      // 当前拖动节点层级-父节点层级<=3，可移动，否则禁止移动
+      let deep = this.maxLevel - draggingNode.data.catLevel + 1
+      // 拖动后的深度
+      console.log('节点拖动后的深度：', deep)
+      // 校验是否可拖动
+      if (type === 'inner') {
+        console.log('插入至目标节点 inner: ', deep + dropNode.level)
+        return (deep + dropNode.level) <= 3
+      } else if (type === 'prev') {
+        console.log('放置在目标节点前 prev: ', dropNode.parent.level)
+        return (deep + dropNode.parent.level) <= 3
+      } else if (type === 'next') {
+        console.log('放置在目标节点后 next: ', dropNode.parent.level)
+        return (deep + dropNode.parent.level) <= 3
+      }
+    },
+    // 计算当前移动节点的层级
+    countNodeLevel (node) {
+      // 找出当前移动节点的，层级最大深度
+      if (node.childrenList !== null && node.childrenList.length > 0) {
+        // 递归遍历当前的最大层级
+        for (let i = 0; i < node.childrenList.length; i++) {
+          if (node.childrenList[i].catLevel > this.maxLevel) {
+            this.maxLevel = node.childrenList[i].catLevel
+          }
+          this.countNodeLevel(node.childrenList[i])
+        }
+      } else {
+        this.maxLevel = node.catLevel
+      }
+    },
+    // 拖拽成功完成时触发的事件，共四个参数，依次为：被拖拽节点对应的 Node、结束拖拽时最后进入的节点、被拖拽节点的放置位置（before、after、inner）
+    handleDrop (draggingNode, dropNode, dropType, ev) {
+      console.log('拖拽成功完成时 handleDrop: ', draggingNode.label, dropNode.label, dropType)
+      // 1、同级节点，获取同级兄弟节点的父级节点
+      let parentCid = 0
+      let reSortNodes = null
+      if (dropType === 'before' || dropType === 'after') {
+        // 取兄弟节点父级ID
+        parentCid = dropNode.parent.data.catId
+        // 兄弟父级的所有子节点
+        reSortNodes = dropNode.parent.childNodes
+      } else {
+        // 移入的节点ID作为父级ID
+        parentCid = dropNode.data.catId
+        // 拖拽进入节点的子节点
+        reSortNodes = dropNode.childNodes
+      }
+      // 2、重新排序，当前拖拽节点所有相关联节点的最新顺序
+      for (let i = 0; i < reSortNodes.length; i++) {
+        // 移动自己
+        if (reSortNodes[i].data.catId === draggingNode.data.catId) {
+          let catLevel = draggingNode.level
+          if (reSortNodes[i].level !== draggingNode.level) {
+            catLevel = reSortNodes[i].level
+            // 3、更新节点层级，当前拖拽节点所有相关联节点是层级更新
+            this.updateChildNodeLevel(reSortNodes)
+          }
+          this.updateNodes.push({ catId: reSortNodes[i].data.catId, sort: i, parentCid: parentCid, catLevel: catLevel })
+        } else {
+          this.updateNodes.push({ catId: reSortNodes[i].data.catId, sort: i })
+        }
+      }
+      this.updateSortNodes(parentCid)
+    },
+    // 修改子节点层级
+    updateChildNodeLevel (childNodes) {
+      if (childNodes.length > 0) {
+        for (let i = 0; i < childNodes.length; i++) {
+          var childNode = childNodes[i].data
+          this.updateNodes.push({ catId: childNode.catId, catLevel: childNodes[i].level })
+          // 递归调用修改
+          this.updateChildNodeLevel(childNodes[i])
+        }
+      }
+    },
+    updateSortNodes (parentCid) {
+      console.log('拖拽节点重排序 updateNodes: ', this.updateNodes)
+      this.$http({
+        url: this.$http.adornUrl('/product/category/reSort'),
+        method: 'post',
+        data: this.$http.adornData(this.updateNodes, false)
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 1500
+          })
+          // 刷新菜单列表
+          this.getMenus()
+          // 设置默认展开的菜单
+          this.expandedKeys = [parentCid]
+
+          // 更新缓存
+          this.updateNodes = []
+          this.maxLevel = 0
+        } else {
+          this.$message.error(data.msg)
+        }
+      })
     }
   },
   // 生命周期 - 创建完成（可以访问当前 this 实例）
@@ -293,4 +424,13 @@ export default {
 }
 </script>
 <style scoped>
+#top {
+    margin-bottom: 20px;
+}
+#external {
+    margin-left: 30px;
+}
+.draggableButton {
+    margin-left: 30px;
+}
 </style>
