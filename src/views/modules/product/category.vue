@@ -467,7 +467,7 @@ export default {
             // 刷新页面
             this.getMenus()
             // 设置展开节点
-            this.expandedKeys = [this.parentCid]
+            this.expandedKeys = this.parentCid
           } else {
             this.message.error(data.msg)
           }
