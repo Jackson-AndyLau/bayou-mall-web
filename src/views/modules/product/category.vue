@@ -19,12 +19,14 @@
         type="warning"
         plain
         @click="batchDelete"
+        :disabled="dataListSelections.length <= 0"
       >批量删除</el-button>
       <el-button
         class="draggableButton"
         type="warning"
         plain
         @click="resetChecked"
+        :disabled="dataListSelections.length <= 0"
       >删除重选</el-button>
     </div>
     <div>
@@ -39,6 +41,9 @@
         @node-drop="handleDrop"
         :allow-drop="allowDrop"
         ref="refTreeMenu"
+        @selection-change="selectionChangeHandle"
+        @check-change="checkChange"
+        @check="check"
       >
         <span
           class="custom-tree-node"
@@ -131,6 +136,8 @@ export default {
   data () {
     // 这里存放数据
     return {
+      // 批量选中
+      dataListSelections: [],
       // 批量删除的节点
       checkedNodes: [],
       // 修改使用的全局pCid
@@ -481,8 +488,16 @@ export default {
         this.checkedNodes = []
       })
     },
+    // 重置选中
     resetChecked () {
       this.$refs.refTreeMenu.setCheckedKeys([])
+      // 清空选中节点
+      this.dataListSelections = []
+    },
+    // 选中的集合
+    check (data, nowCheckNodesStatus) {
+      console.log('选中的集合 selectionChangeHandle: ', data, nowCheckNodesStatus)
+      this.dataListSelections = nowCheckNodesStatus.checkedNodes
     }
   },
   // 生命周期 - 创建完成（可以访问当前 this 实例）
