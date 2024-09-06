@@ -20,6 +20,11 @@ module.exports = {
     // allow async-await
     'generator-star-spacing': 'off',
     // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    // quotes: [2,'double']
+    // no-template-curly-in-string  Unexpected template string expression
+    "no-template-curly-in-string": "off",
+    "semi": "off",
+    "indent": "off"
   }
 }

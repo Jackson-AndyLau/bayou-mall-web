@@ -18,13 +18,15 @@
           v-if="isAuth('product:brand:save')"
           type="primary"
           @click="addOrUpdateHandle()"
-        >新增</el-button>
+          >新增</el-button
+        >
         <el-button
           v-if="isAuth('product:brand:delete')"
           type="danger"
           @click="deleteHandle()"
           :disabled="dataListSelections.length <= 0"
-        >批量删除</el-button>
+          >批量删除</el-button
+        >
       </el-form-item>
     </el-form>
     <el-table
@@ -32,7 +34,7 @@
       border
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
-      style="width: 100%;"
+      style="width: 100%"
     >
       <el-table-column
         type="selection"
@@ -61,6 +63,14 @@
         align="center"
         label="品牌logo地址"
       >
+        <template slot-scope="scope">
+          <!-- <el-image
+            style="width: 100px; height: 100px"
+            :src="scope.row.logo"
+            fit="contain"
+          ></el-image> -->
+          <img :src="scope.row.logo" style="width: 100px; height: 100px" />
+        </template>
       </el-table-column>
       <el-table-column
         prop="descript"
@@ -113,12 +123,14 @@
             type="text"
             size="small"
             @click="addOrUpdateHandle(scope.row.brandId)"
-          >修改</el-button>
+            >修改</el-button
+          >
           <el-button
             type="text"
             size="small"
             @click="deleteHandle(scope.row.brandId)"
-          >删除</el-button>
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -172,9 +184,9 @@ export default {
         url: this.$http.adornUrl('/product/brand/list'),
         method: 'get',
         params: this.$http.adornParams({
-          'page': this.pageIndex,
-          'limit': this.pageSize,
-          'key': this.dataForm.key
+          page: this.pageIndex,
+          limit: this.pageSize,
+          key: this.dataForm.key
         })
       }).then(({ data }) => {
         if (data && data.code === 0) {
@@ -211,14 +223,20 @@ export default {
     },
     // 删除
     deleteHandle (id) {
-      var ids = id ? [id] : this.dataListSelections.map(item => {
-        return item.brandId
-      })
-      this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
+      var ids = id
+        ? [id]
+        : this.dataListSelections.map(item => {
+            return item.brandId
+          })
+      this.$confirm(
+        `确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).then(() => {
         this.$http({
           url: this.$http.adornUrl('/product/brand/delete'),
           method: 'post',
