@@ -69,7 +69,7 @@
             :src="scope.row.logo"
             fit="contain"
           ></el-image> -->
-          <img :src="scope.row.logo" style="width: 100px; height: 100px" />
+          <img :src="scope.row.logo" :alt="scope.row.descript" style="width: 100px; height: 100px" />
         </template>
       </el-table-column>
       <el-table-column
