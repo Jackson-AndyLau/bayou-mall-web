@@ -263,7 +263,7 @@ export default {
       // 解构数据
       let { brandId, showStatus } = rowData
       this.$http({
-        url: this.$http.adornUrl('/product/brand/update'),
+        url: this.$http.adornUrl('/product/brand/updateStatus'),
         method: 'post',
         data: this.$http.adornData({ brandId, showStatus }, false)
       }).then(({ data }) => {
