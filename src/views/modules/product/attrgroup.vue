@@ -157,6 +157,7 @@ export default {
   props: {},
   data () {
     return {
+      catId: 0,
       dataForm: {
         key: ''
       },
@@ -177,7 +178,7 @@ export default {
     getDataList () {
       this.dataListLoading = true
       this.$http({
-        url: this.$http.adornUrl('/product/attrgroup/list'),
+        url: this.$http.adornUrl(`/product/attrgroup/list/${this.catId}`),
         method: 'get',
         params: this.$http.adornParams({
           page: this.pageIndex,
@@ -253,7 +254,7 @@ export default {
         })
       })
     },
-    // 获取到点击时间
+    // 获取到点击事件
     treeNodeClick (data, node, component) {
       console.log(
         'attrgroup接收到子级节点category传来的数据：',
@@ -261,6 +262,12 @@ export default {
         node,
         component
       )
+      if (node.level === 3) {
+        this.catId = data.catId
+
+        // 重新查询列表
+        this.getDataList()
+      }
     }
   }
 }

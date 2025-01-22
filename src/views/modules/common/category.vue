@@ -2,12 +2,14 @@
   <el-tree
     :data="data"
     :props="defaultProps"
-    :expand-on-click-node="false"
+    :expand-on-click-node="true"
     node-key="catId"
-    :draggable="draggableValue"
-    :allow-drop="allowDrop"
     ref="refTreeMenu"
     @node-click="nodeClick"
+    :accordion="true"
+    :highlight-current="true"
+    :default-expanded-keys="expandedKeys"
+    :default-checked-keys="checkedKeys"
   >
   </el-tree>
 </template>
@@ -38,6 +40,8 @@ export default {
       },
       // 显示展示level
       expandedKeys: [],
+      // 默认选中level
+      checkedKeys: [],
       defaultProps: {
         children: 'childrenList',
         label: 'name'
@@ -57,6 +61,10 @@ export default {
       }).then(({ data }) => {
         console.log('成功获取到菜单数据：' + data.treeList)
         this.data = data.treeList
+        this.expandedKeys.push(data.treeList[0].childrenList[0].catId)
+        this.checkedKeys.push(
+          data.treeList[0].childrenList[0].childrenList[0].catId
+        )
       })
     },
     nodeClick (data, node, component) {
