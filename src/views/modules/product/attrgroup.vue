@@ -2,13 +2,16 @@
   <el-row :gutter="20">
     <el-col :span="6">
       <div class="grid-content bg-purple">属性列表</div>
+      <!-- 下划线 -->
       <div>
         <base-divider></base-divider>
       </div>
+      <!-- 引用树的公共组件 -->
       <div>
-        <category></category>
+        <category @tree-node-click="treeNodeClick"></category>
       </div>
     </el-col>
+    <!-- 右边的属性列表 -->
     <el-col :span="18"
       ><div class="grid-content bg-purple">属性值</div>
       <base-divider></base-divider>
@@ -249,6 +252,15 @@ export default {
           }
         })
       })
+    },
+    // 获取到点击时间
+    treeNodeClick (data, node, component) {
+      console.log(
+        'attrgroup接收到子级节点category传来的数据：',
+        data,
+        node,
+        component
+      )
     }
   }
 }

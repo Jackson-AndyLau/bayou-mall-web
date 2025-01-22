@@ -5,9 +5,9 @@
     :expand-on-click-node="false"
     node-key="catId"
     :draggable="draggableValue"
-    @node-drop="handleDrop"
     :allow-drop="allowDrop"
     ref="refTreeMenu"
+    @node-click="nodeClick"
   >
   </el-tree>
 </template>
@@ -58,11 +58,16 @@ export default {
         console.log('成功获取到菜单数据：' + data.treeList)
         this.data = data.treeList
       })
+    },
+    nodeClick (data, node, component) {
+      console.log('当前节点被点击了：', data, node, component)
+      // 向父级组件发送时间
+      this.$emit('tree-node-click', data, node, component)
     }
   },
   // 生命周期 - 创建完成（可以访问当前 this 实例）
   created () {
-    this.getMenus();
+    this.getMenus()
   },
   // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted () {},
