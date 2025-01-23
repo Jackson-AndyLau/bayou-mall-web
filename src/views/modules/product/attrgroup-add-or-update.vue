@@ -3,6 +3,7 @@
     :title="!dataForm.attrGroupId ? '新增' : '修改'"
     :close-on-click-modal="false"
     :visible.sync="visible"
+    @close="closeDialog"
   >
     <el-form
       :model="dataForm"
@@ -26,11 +27,15 @@
       <el-form-item label="组图标" prop="icon">
         <el-input v-model="dataForm.icon" placeholder="组图标"></el-input>
       </el-form-item>
-      <el-form-item label="所属分类id" prop="catelogId">
-        <el-input
-          v-model="dataForm.catelogId"
-          placeholder="所属分类id"
-        ></el-input>
+      <el-form-item label="所属分类" prop="catelogId">
+        <el-cascader
+          style="width: 100%"
+          placeholder="试试分类搜索：指南"
+          :options="categorys"
+          :props="categoryProps"
+          v-model="dataForm.catelogIds"
+          filterable
+        ></el-cascader>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -44,6 +49,13 @@
 export default {
   data () {
     return {
+      // 分类集合
+      categorys: [],
+      categoryProps: {
+        value: 'catId',
+        label: 'name',
+        children: 'childrenList'
+      },
       visible: false,
       dataForm: {
         attrGroupId: 0,
@@ -51,7 +63,8 @@ export default {
         sort: '',
         descript: '',
         icon: '',
-        catelogId: ''
+        catelogIds: [],
+        catelogId: 0
       },
       dataRule: {
         attrGroupName: [
@@ -69,6 +82,16 @@ export default {
     }
   },
   methods: {
+    // 获取分类列表
+    getCategorys () {
+      this.$http({
+        url: this.$http.adornUrl('/product/category/tree'),
+        method: 'get'
+      }).then(({ data }) => {
+        console.log('获取分类列表:', data.treeList)
+        this.categorys = data.treeList
+      })
+    },
     init (id) {
       this.dataForm.attrGroupId = id || 0
       this.visible = true
@@ -87,7 +110,7 @@ export default {
               this.dataForm.sort = data.attrGroup.sort
               this.dataForm.descript = data.attrGroup.descript
               this.dataForm.icon = data.attrGroup.icon
-              this.dataForm.catelogId = data.attrGroup.catelogId
+              this.dataForm.catelogIds = data.attrGroup.catelogIds
             }
           })
         }
@@ -110,7 +133,8 @@ export default {
               sort: this.dataForm.sort,
               descript: this.dataForm.descript,
               icon: this.dataForm.icon,
-              catelogId: this.dataForm.catelogId
+              catelogId:
+                this.dataForm.catelogIds[this.dataForm.catelogIds.length - 1]
             })
           }).then(({ data }) => {
             if (data && data.code === 0) {
@@ -129,7 +153,14 @@ export default {
           })
         }
       })
+    },
+    // 关闭对话框，清空Dialog
+    closeDialog () {
+      this.dataForm.catelogIds = []
     }
+  },
+  created () {
+    this.getCategorys()
   }
 }
 </script>
