@@ -69,7 +69,11 @@
             :src="scope.row.logo"
             fit="contain"
           ></el-image> -->
-          <img :src="scope.row.logo" :alt="scope.row.descript" style="width: 100px; height: 100px" />
+          <img
+            :src="scope.row.logo"
+            :alt="scope.row.descript"
+            style="width: 100px; height: 100px"
+          />
         </template>
       </el-table-column>
       <el-table-column
@@ -122,6 +126,12 @@
           <el-button
             type="text"
             size="small"
+            @click="updateCatelogHandle(scope.row.brandId)"
+            >关联分类</el-button
+          >
+          <el-button
+            type="text"
+            size="small"
             @click="addOrUpdateHandle(scope.row.brandId)"
             >修改</el-button
           >
@@ -150,6 +160,53 @@
       ref="addOrUpdate"
       @refreshDataList="getDataList"
     ></add-or-update>
+    <el-dialog
+      title="关联分类"
+      :visible.sync="cateRelationDialogVisible"
+      width="30%"
+    >
+      <el-popover placement="right-end" v-model="popCatelogSelectVisible">
+        <category-cascader :catelogPath.sync="catelogPath"></category-cascader>
+        <div style="text-align: right; margin: 0">
+          <el-button
+            size="mini"
+            type="text"
+            @click="popCatelogSelectVisible = false"
+            >取消</el-button
+          >
+          <el-button type="primary" size="mini" @click="addCatelogSelect"
+            >确定</el-button
+          >
+        </div>
+        <el-button slot="reference">新增关联</el-button>
+      </el-popover>
+      <el-table :data="cateRelationTableData" style="width: 100%">
+        <el-table-column prop="id" label="#"></el-table-column>
+        <el-table-column prop="brandName" label="品牌名"></el-table-column>
+        <el-table-column prop="catelogName" label="分类名"></el-table-column>
+        <el-table-column
+          fixed="right"
+          header-align="center"
+          align="center"
+          label="操作"
+        >
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              size="small"
+              @click="deleteCateRelationHandle(scope.row.id, scope.row.brandId)"
+              >移除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cateRelationDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="cateRelationDialogVisible = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -167,7 +224,9 @@ export default {
       totalPage: 0,
       dataListLoading: false,
       dataListSelections: [],
-      addOrUpdateVisible: false
+      addOrUpdateVisible: false,
+      cateRelationDialogVisible: false,
+      popCatelogSelectVisible: false
     }
   },
   components: {
@@ -177,6 +236,52 @@ export default {
     this.getDataList()
   },
   methods: {
+    // 新增品牌分类关系
+    addCatelogSelect () {
+      //{"brandId":1,"catelogId":2}
+      this.popCatelogSelectVisible = false
+      this.$http({
+        url: this.$http.adornUrl('/product/categorybrandrelation/save'),
+        method: 'post',
+        data: this.$http.adornData(
+          {
+            brandId: this.brandId,
+            catelogId: this.catelogPath[this.catelogPath.length - 1]
+          },
+          false
+        )
+      }).then(({ data }) => {
+        this.getCateRelation()
+      })
+    },
+    // 删除品牌分类关系
+    deleteCateRelationHandle (id, brandId) {
+      this.$http({
+        url: this.$http.adornUrl('/product/categorybrandrelation/delete'),
+        method: 'post',
+        data: this.$http.adornData([id], false)
+      }).then(({ data }) => {
+        this.getCateRelation()
+      })
+    },
+    // 修改品牌分类关系
+    updateCatelogHandle (brandId) {
+      this.cateRelationDialogVisible = true
+      this.brandId = brandId
+      this.getCateRelation()
+    },
+    // 查询品牌分类关系列表
+    getCateRelation () {
+      this.$http({
+        url: this.$http.adornUrl('/product/categorybrandrelation/catelog/list'),
+        method: 'get',
+        params: this.$http.adornParams({
+          brandId: this.brandId
+        })
+      }).then(({ data }) => {
+        this.cateRelationTableData = data.data
+      })
+    },
     // 获取数据列表
     getDataList () {
       this.dataListLoading = true
